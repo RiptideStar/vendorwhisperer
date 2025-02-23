@@ -1,9 +1,11 @@
-
 import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 const DashboardHeader = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
       <div>
@@ -18,7 +20,7 @@ const DashboardHeader = () => {
         <Button variant="outline" size="icon">
           <Bell className="h-4 w-4" />
         </Button>
-        <Button>New Order</Button>
+        <Button onClick={() => navigate('/new-order')}>New Order</Button>
       </div>
     </div>
   );

@@ -55,6 +55,7 @@
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "ngrok": "^5.0.0-beta.2",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
