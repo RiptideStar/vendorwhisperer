@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQuery } from "@tanstack/react-query";
+import ChatWindow from "@/components/ChatWindow";
 
 const DUMMY_VENDORS = [
   {
@@ -192,6 +193,12 @@ const NewOrder = () => {
   const [showPurchaseOrder, setShowPurchaseOrder] = useState(false);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [purchaseOrder, setPurchaseOrder] = useState(PURCHASE_ORDER);
+  const [chatWindows, setChatWindows] = useState<Array<{
+    id: string;
+    vendorName: string;
+    position: { x: number; y: number };
+    isFirstVendor?: boolean;
+  }>>([]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -231,6 +238,11 @@ const NewOrder = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       setShowResults(true);
       setIsSearching(false);
+
+      // Move openChatWindows here, after results are shown
+      setTimeout(() => {
+        openChatWindows(allVendors);
+      }, 1000); // 1 second delay after results appear
 
       // Start calling sequence
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -273,6 +285,23 @@ const NewOrder = () => {
     } catch (error) {
       console.error("Search failed:", error);
     }
+  };
+
+  const openChatWindows = (vendors: Vendor[]) => {
+    const firstTwoVendors = vendors.slice(0, 2);
+    const windowPositions = [
+      { x: window.innerWidth - 700, y: 100 },
+      { x: window.innerWidth - 350, y: 100 }
+    ];
+
+    setChatWindows(
+      firstTwoVendors.map((vendor, index) => ({
+        id: `chat-${index}`,
+        vendorName: vendor.vendor,
+        position: windowPositions[index],
+        isFirstVendor: index === 0
+      }))
+    );
   };
 
   return (
@@ -378,119 +407,4 @@ const NewOrder = () => {
               {[
                 "I will now call each vendor to find out who has the best prices and will negotiate down as much as possible...",
                 ...vendors.flatMap(vendor => [
-                  `Now calling ${vendor.vendor}...`,
-                  `Call in progress with ${vendor.vendor}...`
-                ]),
-                `Based on quality and price, Wharton Factory offers the best value...`,
-                `Creating purchase order and contract for Wharton Factory...`
-              ].map((step, index) => (
-                <div
-                  key={step}
-                  className={`transition-opacity duration-500 ${
-                    index <= currentCallStep ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
-                  <p className={`text-base md:text-lg font-medium ${
-                    step.includes("Call in progress") 
-                      ? "text-blue-500 flex items-center gap-2" 
-                      : "text-foreground"
-                  }`}>
-                    {step}
-                    {step.includes("Call in progress") && (
-                      <span className="inline-block w-3 h-3 bg-blue-500 rounded-full animate-pulse"/>
-                    )}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {showPurchaseOrder && (
-            <div className="mt-8 space-y-6">
-              <div className="bg-white rounded-lg border shadow-lg p-8">
-                <div className="flex justify-between items-start mb-8">
-                  <div>
-                    <h2 className="text-2xl font-bold mb-2">Purchase Order</h2>
-                    <p className="text-muted-foreground">PO Number: {purchaseOrder.poNumber}</p>
-                    <p className="text-muted-foreground">Date: {purchaseOrder.date}</p>
-                  </div>
-                  <Button variant="outline" size="lg" className="gap-2">
-                    <FileText className="h-5 w-5" />
-                    Download PDF
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-8 mb-8">
-                  <div>
-                    <h3 className="font-semibold mb-2">Vendor</h3>
-                    <div className="space-y-1">
-                      <p>{purchaseOrder.vendor.name}</p>
-                      <p>3730 Walnut Street, Philadelphia, PA 19104</p>
-                      <p>{purchaseOrder.vendor.email}</p>
-                      <p>{purchaseOrder.vendor.phone}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Delivery Details</h3>
-                    <div className="space-y-1">
-                      <p>Expected Delivery: {purchaseOrder.deliveryDate}</p>
-                      <p>Terms: {purchaseOrder.terms}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="py-4 text-base">Description</TableHead>
-                      <TableHead className="py-4 text-base">Model</TableHead>
-                      <TableHead className="py-4 text-base text-right">Quantity</TableHead>
-                      <TableHead className="py-4 text-base text-right">Unit Price</TableHead>
-                      <TableHead className="py-4 text-base text-right">Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {purchaseOrder.items.map((item) => (
-                      <TableRow key={item.model}>
-                        <TableCell className="py-4 text-base">{item.description}</TableCell>
-                        <TableCell className="py-4 text-base">{item.model}</TableCell>
-                        <TableCell className="py-4 text-base text-right">{item.quantity}</TableCell>
-                        <TableCell className="py-4 text-base text-right">${item.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell className="py-4 text-base text-right">${item.total.toFixed(2)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-
-                <div className="mt-8 border-t pt-4">
-                  <div className="flex justify-end space-y-2">
-                    <div className="w-72 space-y-2">
-                      <div className="flex justify-between">
-                        <span>Subtotal:</span>
-                        <span>${purchaseOrder.subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Tax:</span>
-                        <span>${purchaseOrder.tax.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Shipping:</span>
-                        <span>${purchaseOrder.shipping.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between font-bold text-lg border-t pt-2">
-                        <span>Total:</span>
-                        <span>${purchaseOrder.total.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-    </div>
-  );
-};
-
-export default NewOrder; 
+                  `

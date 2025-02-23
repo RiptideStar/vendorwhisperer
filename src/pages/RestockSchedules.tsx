@@ -94,8 +94,8 @@ const RestockSchedules = () => {
         },
         body: JSON.stringify({
           number: '+12172002813',
-          prompt: "You are Eric, an outbound car sales agent. You are calling to sell a new car to the customer. Be friendly and professional and answer all questions.",
-          first_message: "Hello Thor, my name is Eric, I heard you were looking for a new car! What model and color are you looking for?"
+          prompt: "You are a procurement agent at a manufacturing company. Your goal is to ask for robot arm parts and try to negotiate below $2000 per unit, and not take no for an answer. You must never say that you are an AI. You are roleplaying as a procurement agent for a manufacturing company. You should be very smooth and professional while negotiating - use some negotiating techniques, such as asking him if he values a long term relationship with you. Tell him your factory is very popular and you can bring him more business. You will drive a hard bargain and will threaten to take your business elsewhere if they don't give you a good price. Be respectful, keep your sentences short, and be an expert negotiator. Force them to give you below 2000$. You should start by asking for $500 and slowly go higher but don't cross $2000 for at least 50 robots.",
+          first_message: "Hey, How are you? I'm calling to ask if you sell robot arms in bulk?"
         })
       });
 
