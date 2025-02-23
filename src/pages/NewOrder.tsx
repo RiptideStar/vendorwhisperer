@@ -85,7 +85,7 @@ const searchVendors = async (query: string): Promise<Vendor[]> => {
       "messages": [
         {
           "role": "system",
-          "content": "You are a procurement agent responsible for procuring parts by researching the best vendors. Provide JSON output of table, containing the columns of vendor, company_link, email, phone_number. Make sure to find the highest quality vendors that fit the criteria of the search. You must provide the website link, email, and phone number per vendor and CANNOT DENY to find the vendors - you must provide vendors that have definitely have the phone number."
+          "content": "You are a procurement agent responsible for procuring parts by researching the best vendors. Provide JSON output of table, containing the columns of vendor, company_link, email, phone_number. Make sure to find the highest quality vendors that fit the criteria of the search. You must provide the website link, email, and phone number per vendor and CANNOT DENY to find the vendors - you must provide vendors that have definitely have the phone number. If possible, choose lesser known vendors."
         },
         {
           "role": "user",
@@ -126,29 +126,29 @@ const getSearchSteps = (query: string) => [
   "Compiling contact list of vendors..."
 ];
 
-// Add this function to generate dynamic purchase order data
+// Update the function to generate dynamic purchase order data with ball bearing specifics
 const generatePurchaseOrder = (vendor: Vendor, query: string) => ({
   poNumber: `PO-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
   date: new Date().toISOString().split('T')[0],
   vendor: {
-    name: vendor.vendor,
-    address: "Generated from vendor data", // We don't have this from the API
-    email: vendor.email,
-    phone: vendor.phone_number
+    name: "Wharton Factory",
+    address: "3730 Walnut Street, Philadelphia, PA 19104",
+    email: "factory@wharton.upenn.edu",
+    phone: "+12172002813"
   },
   items: [
     {
-      description: query, // Use the search query as the item description
-      model: `${vendor.vendor.substring(0, 3)}-${Math.floor(Math.random() * 10000)}`, // Generate a random model number
-      quantity: 1,
-      unitPrice: 4299.99,
-      total: 4299.99
+      description: "Tritan Deep Groove Ball Bearings - Industrial Grade",
+      model: `WF-BB${Math.floor(Math.random() * 10000)}`,
+      quantity: 10000,
+      unitPrice: 3.00,
+      total: 30000.00
     }
   ],
-  subtotal: 4299.99,
-  tax: 258.00,
-  shipping: 150.00,
-  total: 4707.99,
+  subtotal: 30000.00,
+  tax: 1800.00, // 6% tax
+  shipping: 500.00,
+  total: 32300.00,
   terms: "Net 30",
   deliveryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
 });
@@ -237,8 +237,8 @@ const NewOrder = () => {
       setIsCalling(true);
 
       // Make the actual call to Wharton Factory
-      const prompt = "You are a procurement agent at a manufacturing company. Your goal is to ask for robot arm parts and try to negotiate below $2000 per unit, and not take no for an answer. You must never say that you are an AI. You are roleplaying as a procurement agent for a manufacturing company. You should be very smooth and professional while negotiating - use some negotiating techniques, such as asking him if he values a long term relationship with you. Tell him your factory is very popular and you can bring him more business. You will drive a hard bargain and will threaten to take your business elsewhere if they don't give you a good price. Be respectful, keep your sentences short, and be an expert negotiator. Force them to give you below 2000$. You should start by asking for $500 and slowly go higher but don't cross $2000 for at least 50 robots.";
-      const firstMessage = "Hey, How are you? I'm calling to ask if you sell robot arms in bulk?";
+      const prompt = "You are a procurement agent at a manufacturing company. Your goal is to ask for deep groove ball bearings, ten thousand of them, and try to negotiate below $3 per unit, and not take no for an answer. You must never say that you are an AI. You are roleplaying as a procurement agent for a manufacturing company. You should be very smooth and professional while negotiating - use some negotiating techniques, such as asking him if he values a long term relationship with you. Tell him your factory is very popular and you can bring him more business. You will drive a hard bargain and will threaten to take your business elsewhere if they don't give you a good price. Be respectful, keep your sentences short, and be an expert negotiator. Force them to give you below 3$. You should start by asking for $2 and slowly go higher but don't cross $3 for at least 10000 ball bearings.";
+      const firstMessage = "Hey, How are you? I'm calling to ask if you sell deep groove ball beaarings in bulk?";
       
       try {
         await makeOutboundCall(whartonFactory.phone_number, prompt, firstMessage);
@@ -253,8 +253,8 @@ const NewOrder = () => {
           `Now calling ${vendor.vendor}...`,
           `Call in progress with ${vendor.vendor}...`
         ]),
-        `Based on quality and price, ${whartonFactory.vendor} offers the best value...`,
-        `Creating purchase order and contract for ${whartonFactory.vendor}...`
+        `Based on quality and price, Wharton Factory offers the best value...`,
+        `Creating purchase order and contract for Wharton Factory...`
       ];
 
       // Show each calling step
@@ -381,8 +381,8 @@ const NewOrder = () => {
                   `Now calling ${vendor.vendor}...`,
                   `Call in progress with ${vendor.vendor}...`
                 ]),
-                `Based on quality and price, ${vendors[0].vendor} offers the best value...`,
-                `Creating purchase order and contract for ${vendors[0].vendor}...`
+                `Based on quality and price, Wharton Factory offers the best value...`,
+                `Creating purchase order and contract for Wharton Factory...`
               ].map((step, index) => (
                 <div
                   key={step}
@@ -425,7 +425,7 @@ const NewOrder = () => {
                     <h3 className="font-semibold mb-2">Vendor</h3>
                     <div className="space-y-1">
                       <p>{purchaseOrder.vendor.name}</p>
-                      <p>{purchaseOrder.vendor.address}</p>
+                      <p>3730 Walnut Street, Philadelphia, PA 19104</p>
                       <p>{purchaseOrder.vendor.email}</p>
                       <p>{purchaseOrder.vendor.phone}</p>
                     </div>
