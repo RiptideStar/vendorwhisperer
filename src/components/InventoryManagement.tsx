@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface InventoryItem {
   id: string;
@@ -20,6 +22,8 @@ interface InventoryItem {
 }
 
 const InventoryManagement = () => {
+  const navigate = useNavigate();
+  
   const { data: inventoryItems, isLoading } = useQuery({
     queryKey: ["inventory-items"],
     queryFn: async () => {
@@ -52,7 +56,23 @@ const InventoryManagement = () => {
   return (
     <Card className="col-span-2">
       <div className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Inventory Management</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Inventory Management</h2>
+          <div className="space-x-2">
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/restock-schedules')}
+            >
+              Restock Schedules
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/restock-orders')}
+            >
+              Restock Orders
+            </Button>
+          </div>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
