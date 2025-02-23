@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { format } from "date-fns";
 import { PhoneCall } from "lucide-react";
 
 interface RestockSchedule {
@@ -26,9 +26,7 @@ const RestockOrders = () => {
   const { data: todaySchedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ["today-restock-schedules"],
     queryFn: async () => {
-      // Use startOfDay and endOfDay for more accurate date filtering
-      const start = startOfDay(new Date());
-      const end = endOfDay(new Date());
+      const today = new Date().toISOString().split('T')[0]; // Get just the date part
 
       const { data, error } = await supabase
         .from("restock_schedules")
@@ -45,15 +43,14 @@ const RestockOrders = () => {
           )
         `)
         .eq('active', true)
-        .gte('next_check_date', start.toISOString())
-        .lte('next_check_date', end.toISOString());
+        .eq('next_check_date', today);
 
       if (error) {
         console.error('Error fetching restock schedules:', error);
         throw error;
       }
       
-      console.log('Fetched schedules:', data); // Add logging to debug
+      console.log('Fetched schedules:', data);
       return data as RestockSchedule[];
     },
   });
