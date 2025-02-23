@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { CalendarDays } from "lucide-react";
 
 interface InventoryItem {
   id: string;
@@ -58,20 +59,13 @@ const InventoryManagement = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Inventory Management</h2>
-          <div className="space-x-2">
-            <Button 
-              variant="outline"
-              onClick={() => navigate('/restock-schedules')}
-            >
-              Restock Schedules
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => navigate('/restock-orders')}
-            >
-              Restock Orders
-            </Button>
-          </div>
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/restock-schedules')}
+          >
+            <CalendarDays className="mr-2 h-4 w-4" />
+            Routine Restock
+          </Button>
         </div>
         <Table>
           <TableHeader>
