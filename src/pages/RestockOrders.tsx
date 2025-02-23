@@ -26,8 +26,7 @@ const RestockOrders = () => {
   const { data: todaySchedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ["today-restock-schedules"],
     queryFn: async () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const today = new Date().toISOString().split('T')[0];
 
       const { data, error } = await supabase
         .from("restock_schedules")
@@ -44,10 +43,14 @@ const RestockOrders = () => {
           )
         `)
         .eq('active', true)
-        .gte('next_check_date', today.toISOString())
-        .lt('next_check_date', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString());
+        .eq('next_check_date', today);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching restock schedules:', error);
+        throw error;
+      }
+      
+      console.log('Fetched schedules:', data);
       return data as RestockSchedule[];
     },
   });
@@ -63,8 +66,11 @@ const RestockOrders = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Expected Orders Today</h1>
+        <div className="flex flex-col mb-6">
+          <h1 className="text-3xl font-bold">Routine Restock</h1>
+          <h2 className="text-lg text-muted-foreground mt-2">
+            Orders Expected on {format(new Date(), 'MMMM d, yyyy')}
+          </h2>
         </div>
         
         <Card>
