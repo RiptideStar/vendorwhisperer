@@ -9,7 +9,175 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      inventory_items: {
+        Row: {
+          created_at: string | null
+          current_stock: number
+          id: string
+          last_ordered_at: string | null
+          name: string
+          reorder_point: number
+          reorder_quantity: number
+          sku: string | null
+          unit: string
+          vendor_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_stock?: number
+          id?: string
+          last_ordered_at?: string | null
+          name: string
+          reorder_point: number
+          reorder_quantity: number
+          sku?: string | null
+          unit: string
+          vendor_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_stock?: number
+          id?: string
+          last_ordered_at?: string | null
+          name?: string
+          reorder_point?: number
+          reorder_quantity?: number
+          sku?: string | null
+          unit?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restock_orders: {
+        Row: {
+          created_at: string | null
+          expected_delivery: string | null
+          id: string
+          inventory_item_id: string | null
+          notes: string | null
+          order_date: string | null
+          quantity: number
+          status: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expected_delivery?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          notes?: string | null
+          order_date?: string | null
+          quantity: number
+          status?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expected_delivery?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          notes?: string | null
+          order_date?: string | null
+          quantity?: number
+          status?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restock_orders_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restock_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restock_schedules: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          frequency_days: number
+          id: string
+          inventory_item_id: string | null
+          last_check_date: string | null
+          next_check_date: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          frequency_days: number
+          id?: string
+          inventory_item_id?: string | null
+          last_check_date?: string | null
+          next_check_date?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          frequency_days?: number
+          id?: string
+          inventory_item_id?: string | null
+          last_check_date?: string | null
+          next_check_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restock_schedules_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          preferred_contact_method: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          preferred_contact_method?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          preferred_contact_method?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
