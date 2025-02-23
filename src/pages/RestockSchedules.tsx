@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -84,8 +83,31 @@ const RestockSchedules = () => {
     },
   });
 
-  const handleCallVendor = (phone: string) => {
-    window.location.href = `tel:${phone}`;
+  const handleCallVendor = async (phone: string) => {
+    //alert('handleCallVendor called'); // Debug alert
+    try {
+      //alert('Attempting to make call...'); // Debug alert
+      const response = await fetch('http://localhost:8000/outbound-call', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          number: '+12172002813',
+          prompt: "You are Eric, an outbound car sales agent. You are calling to sell a new car to the customer. Be friendly and professional and answer all questions.",
+          first_message: "Hello Thor, my name is Eric, I heard you were looking for a new car! What model and color are you looking for?"
+        })
+      });
+
+      //alert('Got response: ' + response.status); // Debug alert
+
+      if (!response.ok) {
+        throw new Error('Failed to initiate call');
+      }
+      //alert('Call initiated successfully');
+    } catch (error) {
+      alert('Error: ' + error.message); // Show error to user
+    }
   };
 
   if (isLoading) {
@@ -136,7 +158,11 @@ const RestockSchedules = () => {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => handleCallVendor(schedule.inventory_item?.vendor?.phone || '')}
+                                onClick={() => {
+                                  //alert('Button clicked!');  // This should show immediately
+                                  console.log('Button clicked at:', new Date().toISOString());
+                                  handleCallVendor(schedule.inventory_item?.vendor?.phone || '');
+                                }}
                               >
                                 <PhoneCall className="mr-2 h-4 w-4" />
                                 Call Vendor
@@ -210,7 +236,10 @@ const RestockSchedules = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleCallVendor(schedule.inventory_item.vendor.phone || '')}
+                            onClick={() => {
+                              //console.log('Button clicked!');
+                              handleCallVendor(schedule.inventory_item.vendor.phone || '');
+                            }}
                           >
                             <PhoneCall className="mr-2 h-4 w-4" />
                             Call Vendor
