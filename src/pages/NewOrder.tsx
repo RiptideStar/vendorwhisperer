@@ -81,7 +81,7 @@ const searchVendors = async (query: string): Promise<Vendor[]> => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      "model": "sonar-reasoning-pro",
+      "model": "sonar-pro",
       "messages": [
         {
           "role": "system",
@@ -126,21 +126,32 @@ const getSearchSteps = (query: string) => [
   "Compiling contact list of vendors..."
 ];
 
-const CALLING_STEPS = [
-  "I will now call each vendor to find out who has the best prices and will negotiate down as much as possible...",
-  "Now calling Industrial Motors Pro...",
-  "Call in progress with Industrial Motors Pro...",
-  "Now calling CNC Solutions Inc...",
-  "Call in progress with CNC Solutions Inc...",
-  "Now calling Precision Spindle Co...",
-  "Call in progress with Precision Spindle Co...",
-  "Now calling Advanced Machine Parts...",
-  "Call in progress with Advanced Machine Parts...",
-  "Now calling Eastern Motors Supply...",
-  "Call in progress with Eastern Motors Supply...",
-  "Based on quality and price, Precision Spindle Co offers the best value...",
-  "Creating purchase order and contract for Precision Spindle Co..."
-];
+// Add this function to generate dynamic purchase order data
+const generatePurchaseOrder = (vendor: Vendor, query: string) => ({
+  poNumber: `PO-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+  date: new Date().toISOString().split('T')[0],
+  vendor: {
+    name: vendor.vendor,
+    address: "Generated from vendor data", // We don't have this from the API
+    email: vendor.email,
+    phone: vendor.phone_number
+  },
+  items: [
+    {
+      description: query, // Use the search query as the item description
+      model: `${vendor.vendor.substring(0, 3)}-${Math.floor(Math.random() * 10000)}`, // Generate a random model number
+      quantity: 1,
+      unitPrice: 4299.99,
+      total: 4299.99
+    }
+  ],
+  subtotal: 4299.99,
+  tax: 258.00,
+  shipping: 150.00,
+  total: 4707.99,
+  terms: "Net 30",
+  deliveryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
+});
 
 const NewOrder = () => {
   const navigate = useNavigate();
@@ -152,6 +163,7 @@ const NewOrder = () => {
   const [currentCallStep, setCurrentCallStep] = useState(0);
   const [showPurchaseOrder, setShowPurchaseOrder] = useState(false);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [purchaseOrder, setPurchaseOrder] = useState(PURCHASE_ORDER);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -186,10 +198,26 @@ const NewOrder = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setIsCalling(true);
 
-      for (let i = 0; i < CALLING_STEPS.length; i++) {
+      // Generate calling steps using actual vendor names
+      const callingSteps = [
+        "I will now call each vendor to find out who has the best prices and will negotiate down as much as possible...",
+        ...vendorResults.flatMap(vendor => [
+          `Now calling ${vendor.vendor}...`,
+          `Call in progress with ${vendor.vendor}...`
+        ]),
+        `Based on quality and price, ${vendorResults[0].vendor} offers the best value...`,
+        `Creating purchase order and contract for ${vendorResults[0].vendor}...`
+      ];
+
+      // Show each calling step
+      for (let i = 0; i < callingSteps.length; i++) {
         await new Promise(resolve => setTimeout(resolve, 2000));
         setCurrentCallStep(i);
       }
+
+      // Generate and set purchase order with selected vendor data
+      const newPurchaseOrder = generatePurchaseOrder(vendorResults[0], searchQuery);
+      setPurchaseOrder(newPurchaseOrder);
 
       // Show purchase order
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -297,9 +325,17 @@ const NewOrder = () => {
             </div>
           )}
 
-          {isCalling && (
+          {isCalling && vendors.length > 0 && (
             <div className="mt-8 space-y-3">
-              {CALLING_STEPS.map((step, index) => (
+              {[
+                "I will now call each vendor to find out who has the best prices and will negotiate down as much as possible...",
+                ...vendors.flatMap(vendor => [
+                  `Now calling ${vendor.vendor}...`,
+                  `Call in progress with ${vendor.vendor}...`
+                ]),
+                `Based on quality and price, ${vendors[0].vendor} offers the best value...`,
+                `Creating purchase order and contract for ${vendors[0].vendor}...`
+              ].map((step, index) => (
                 <div
                   key={step}
                   className={`transition-opacity duration-500 ${
@@ -327,8 +363,8 @@ const NewOrder = () => {
                 <div className="flex justify-between items-start mb-8">
                   <div>
                     <h2 className="text-2xl font-bold mb-2">Purchase Order</h2>
-                    <p className="text-muted-foreground">PO Number: {PURCHASE_ORDER.poNumber}</p>
-                    <p className="text-muted-foreground">Date: {PURCHASE_ORDER.date}</p>
+                    <p className="text-muted-foreground">PO Number: {purchaseOrder.poNumber}</p>
+                    <p className="text-muted-foreground">Date: {purchaseOrder.date}</p>
                   </div>
                   <Button variant="outline" size="lg" className="gap-2">
                     <FileText className="h-5 w-5" />
@@ -340,17 +376,17 @@ const NewOrder = () => {
                   <div>
                     <h3 className="font-semibold mb-2">Vendor</h3>
                     <div className="space-y-1">
-                      <p>{PURCHASE_ORDER.vendor.name}</p>
-                      <p>{PURCHASE_ORDER.vendor.address}</p>
-                      <p>{PURCHASE_ORDER.vendor.email}</p>
-                      <p>{PURCHASE_ORDER.vendor.phone}</p>
+                      <p>{purchaseOrder.vendor.name}</p>
+                      <p>{purchaseOrder.vendor.address}</p>
+                      <p>{purchaseOrder.vendor.email}</p>
+                      <p>{purchaseOrder.vendor.phone}</p>
                     </div>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Delivery Details</h3>
                     <div className="space-y-1">
-                      <p>Expected Delivery: {PURCHASE_ORDER.deliveryDate}</p>
-                      <p>Terms: {PURCHASE_ORDER.terms}</p>
+                      <p>Expected Delivery: {purchaseOrder.deliveryDate}</p>
+                      <p>Terms: {purchaseOrder.terms}</p>
                     </div>
                   </div>
                 </div>
@@ -366,7 +402,7 @@ const NewOrder = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {PURCHASE_ORDER.items.map((item) => (
+                    {purchaseOrder.items.map((item) => (
                       <TableRow key={item.model}>
                         <TableCell className="py-4 text-base">{item.description}</TableCell>
                         <TableCell className="py-4 text-base">{item.model}</TableCell>
@@ -383,19 +419,19 @@ const NewOrder = () => {
                     <div className="w-72 space-y-2">
                       <div className="flex justify-between">
                         <span>Subtotal:</span>
-                        <span>${PURCHASE_ORDER.subtotal.toFixed(2)}</span>
+                        <span>${purchaseOrder.subtotal.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Tax:</span>
-                        <span>${PURCHASE_ORDER.tax.toFixed(2)}</span>
+                        <span>${purchaseOrder.tax.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Shipping:</span>
-                        <span>${PURCHASE_ORDER.shipping.toFixed(2)}</span>
+                        <span>${purchaseOrder.shipping.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between font-bold text-lg border-t pt-2">
                         <span>Total:</span>
-                        <span>${PURCHASE_ORDER.total.toFixed(2)}</span>
+                        <span>${purchaseOrder.total.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
