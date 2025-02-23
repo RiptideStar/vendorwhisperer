@@ -14,13 +14,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface RestockSchedule {
   id: string;
   frequency_days: number;
-  last_check_date: string;
-  next_check_date: string;
+  last_check_date: string | null;
+  next_check_date: string | null;
   active: boolean;
   inventory_item: {
     name: string;
-    current_stock: number;
-    reorder_point: number;
+    current_stock?: number;
+    reorder_point?: number;
+    reorder_quantity?: number;
     unit: string;
     vendor: {
       name: string;
@@ -44,6 +45,7 @@ const RestockSchedules = () => {
             name,
             current_stock,
             reorder_point,
+            reorder_quantity,
             unit,
             vendor:vendors (
               name,
@@ -127,7 +129,7 @@ const RestockSchedules = () => {
                           </TableCell>
                           <TableCell>{schedule.inventory_item?.vendor?.name || 'Unknown Vendor'}</TableCell>
                           <TableCell>
-                            {schedule.inventory_item?.reorder_point || 0} {schedule.inventory_item?.unit || 'units'}
+                            {schedule.inventory_item?.reorder_quantity || 0} {schedule.inventory_item?.unit || 'units'}
                           </TableCell>
                           <TableCell>
                             {schedule.inventory_item?.vendor?.phone ? (
