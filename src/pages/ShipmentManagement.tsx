@@ -31,7 +31,7 @@ const getStatusColor = (status: string) => {
   if (status === "Processing") return "text-yellow-600";
   if (status === "Shipped") return "text-green-600";
   if (status === "Delayed") return "text-red-600 font-bold";  // added font-bold for Delayed
-  return "text-gray-600";
+  return "text-gray-600``";
 };
 
 const ShipmentManagement = () => {
@@ -56,15 +56,16 @@ const ShipmentManagement = () => {
     setTooltipPosition(null);
   };
 
-  // New handler for contacting vendor updated to not include the phone number in client code
+  // Update handler for contacting vendor:
   const handleContactVendor = async (vendorId: string) => {
-    // The API route below will use your TWILIO_PHONE_NUMBER from process.env on the server side.
-    // You may derive the "to" number based on vendorId if needed.
+    // For demo purposes, set the vendorPhone to a dummy valid number.
+    // In production, derive this number from your database or secure service.
+    const vendorPhone = "+16501234567"; // Replace with the actual vendor phone number.
     try {
       const res = await fetch("/api/callVendor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vendorPhone: "" }), // Leave vendorPhone empty or derive from vendorId
+        body: JSON.stringify({ vendorPhone }), // now sending a valid phone number
       });
       if (!res.ok) throw new Error("Failed to initiate call");
       const data = await res.json();
