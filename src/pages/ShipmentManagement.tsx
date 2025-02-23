@@ -56,9 +56,22 @@ const ShipmentManagement = () => {
     setTooltipPosition(null);
   };
 
-  // New handler for contacting vendor
-  const handleContactVendor = (vendorId: string) => {
-    // Placeholder: integrate with Twilio/ElevenLabs API here.
+  // New handler for contacting vendor updated to not include the phone number in client code
+  const handleContactVendor = async (vendorId: string) => {
+    // The API route below will use your TWILIO_PHONE_NUMBER from process.env on the server side.
+    // You may derive the "to" number based on vendorId if needed.
+    try {
+      const res = await fetch("/api/callVendor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vendorPhone: "" }), // Leave vendorPhone empty or derive from vendorId
+      });
+      if (!res.ok) throw new Error("Failed to initiate call");
+      const data = await res.json();
+      console.log("Call initiated, SID:", data.sid);
+    } catch (error) {
+      console.error("Error contacting vendor:", error);
+    }
     console.log("Initiating contact with vendor:", vendorId);
   };
 
