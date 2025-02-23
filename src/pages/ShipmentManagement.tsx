@@ -56,11 +56,6 @@ const ShipmentManagement = () => {
     setTooltipPosition(null);
   };
 
-<<<<<<< HEAD
-  // New handler for contacting vendor
-  const handleContactVendor = (vendorId: string) => {
-    // Placeholder: integrate with Twilio/ElevenLabs API here.
-=======
   // New handler for contacting vendor updated to not include the phone number in client code
   const handleContactVendor = async (vendorId: string) => {
     // The API route below will use your TWILIO_PHONE_NUMBER from process.env on the server side.
@@ -77,7 +72,6 @@ const ShipmentManagement = () => {
     } catch (error) {
       console.error("Error contacting vendor:", error);
     }
->>>>>>> 6eb38b1 (No changes made)
     console.log("Initiating contact with vendor:", vendorId);
   };
 
