@@ -20,8 +20,8 @@ interface RestockOrder {
     unit: string;
     vendor: {
       name: string;
-    };
-  };
+    } | null;
+  } | null;
 }
 
 const RestockOrders = () => {
@@ -92,21 +92,25 @@ const RestockOrders = () => {
                 {orders?.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell>
-                      {format(new Date(order.order_date), 'MMM d, yyyy')}
+                      {order.order_date 
+                        ? format(new Date(order.order_date), 'MMM d, yyyy')
+                        : 'Not set'}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {order.inventory_item.name}
+                      {order.inventory_item?.name || 'Unknown Item'}
                     </TableCell>
-                    <TableCell>{order.inventory_item.vendor.name}</TableCell>
                     <TableCell>
-                      {order.quantity} {order.inventory_item.unit}
+                      {order.inventory_item?.vendor?.name || 'Unknown Vendor'}
+                    </TableCell>
+                    <TableCell>
+                      {order.quantity} {order.inventory_item?.unit || 'units'}
                     </TableCell>
                     <TableCell>
                       {order.expected_delivery 
                         ? format(new Date(order.expected_delivery), 'MMM d, yyyy')
                         : 'Not set'}
                     </TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>{getStatusBadge(order.status || 'pending')}</TableCell>
                     <TableCell>{order.notes || '-'}</TableCell>
                   </TableRow>
                 ))}
