@@ -7,9 +7,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PhoneCall } from "lucide-react";
+import { Calendar as CalendarIcon, PhoneCall, Share2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 
 interface RestockSchedule {
   id: string;
@@ -31,6 +32,7 @@ interface RestockSchedule {
 }
 
 const RestockSchedules = () => {
+  const { toast } = useToast();
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState<Date>(new Date());
 
@@ -88,6 +90,46 @@ const RestockSchedules = () => {
     window.location.href = `tel:${phone}`;
   };
 
+  const createGoogleCalendarEvent = (schedule: RestockSchedule) => {
+    const eventTitle = `Restock ${schedule.inventory_item.name}`;
+    const eventDescription = `
+      Vendor: ${schedule.inventory_item.vendor.name}
+      Quantity: ${schedule.inventory_item.reorder_quantity} ${schedule.inventory_item.unit}
+      ${schedule.inventory_item.vendor.phone ? `Phone: ${schedule.inventory_item.vendor.phone}` : ''}
+    `.trim();
+
+    const date = new Date(schedule.next_check_date || '');
+    // Set the time to 9 AM
+    date.setHours(9, 0, 0);
+    
+    const endDate = new Date(date);
+    endDate.setHours(10, 0, 0); // 1 hour duration
+
+    const googleCalendarUrl = new URL('https://calendar.google.com/calendar/render');
+    googleCalendarUrl.searchParams.append('action', 'TEMPLATE');
+    googleCalendarUrl.searchParams.append('text', eventTitle);
+    googleCalendarUrl.searchParams.append('details', eventDescription);
+    googleCalendarUrl.searchParams.append('dates', 
+      `${date.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`
+    );
+
+    window.open(googleCalendarUrl.toString(), '_blank');
+    toast({
+      title: "Calendar Event Created",
+      description: "The restock event has been added to your Google Calendar",
+    });
+  };
+
+  const addAllToGoogleCalendar = () => {
+    todaySchedules?.forEach(schedule => {
+      createGoogleCalendarEvent(schedule);
+    });
+    toast({
+      title: "Calendar Events Created",
+      description: "All today's restock events have been added to your Google Calendar",
+    });
+  };
+
   if (isLoading) {
     return <div className="p-4">Loading restock schedules...</div>;
   }
@@ -96,10 +138,23 @@ const RestockSchedules = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8">
         <div className="flex flex-col mb-6">
-          <h1 className="text-3xl font-bold">Routine Restock</h1>
-          <h2 className="text-lg text-muted-foreground mt-2">
-            Orders Expected on {format(new Date(), 'MMMM d, yyyy')}
-          </h2>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Routine Restock</h1>
+              <h2 className="text-lg text-muted-foreground mt-2">
+                Orders Expected on {format(new Date(), 'MMMM d, yyyy')}
+              </h2>
+            </div>
+            {todaySchedules && todaySchedules.length > 0 && (
+              <Button 
+                variant="outline"
+                onClick={addAllToGoogleCalendar}
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Add All to Google Calendar
+              </Button>
+            )}
+          </div>
         </div>
 
         <Tabs defaultValue="today" className="space-y-4">
@@ -132,18 +187,26 @@ const RestockSchedules = () => {
                             {schedule.inventory_item?.reorder_quantity || 0} {schedule.inventory_item?.unit || 'units'}
                           </TableCell>
                           <TableCell>
-                            {schedule.inventory_item?.vendor?.phone ? (
-                              <Button 
-                                variant="outline" 
+                            <div className="flex items-center gap-2">
+                              {schedule.inventory_item?.vendor?.phone && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleCallVendor(schedule.inventory_item?.vendor?.phone || '')}
+                                >
+                                  <PhoneCall className="mr-2 h-4 w-4" />
+                                  Call Vendor
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
                                 size="sm"
-                                onClick={() => handleCallVendor(schedule.inventory_item?.vendor?.phone || '')}
+                                onClick={() => createGoogleCalendarEvent(schedule)}
                               >
-                                <PhoneCall className="mr-2 h-4 w-4" />
-                                Call Vendor
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Add to Calendar
                               </Button>
-                            ) : (
-                              <Badge variant="secondary">No phone number</Badge>
-                            )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -206,16 +269,26 @@ const RestockSchedules = () => {
                             {schedule.inventory_item.vendor.name}
                           </div>
                         </div>
-                        {schedule.inventory_item.vendor.phone && (
+                        <div className="flex items-center gap-2">
+                          {schedule.inventory_item.vendor.phone && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCallVendor(schedule.inventory_item.vendor.phone || '')}
+                            >
+                              <PhoneCall className="mr-2 h-4 w-4" />
+                              Call Vendor
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleCallVendor(schedule.inventory_item.vendor.phone || '')}
+                            onClick={() => createGoogleCalendarEvent(schedule)}
                           >
-                            <PhoneCall className="mr-2 h-4 w-4" />
-                            Call Vendor
+                            <Share2 className="mr-2 h-4 w-4" />
+                            Add to Calendar
                           </Button>
-                        )}
+                        </div>
                       </div>
                     ))}
                 </div>
