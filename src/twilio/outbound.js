@@ -86,7 +86,7 @@ fastify.post("/outbound-call", async (request, reply) => {
     const call = await twilioClient.calls.create({
       from: TWILIO_PHONE_NUMBER,
       to: number,
-      url: `https://c7d5-172-254-23-67.ngrok-free.app/outbound-call-twiml?prompt=${encodeURIComponent(
+      url: `https://ec46-172-254-23-67.ngrok-free.app/outbound-call-twiml?prompt=${encodeURIComponent(
         prompt
       )}&first_message=${encodeURIComponent(first_message)}`,
     });

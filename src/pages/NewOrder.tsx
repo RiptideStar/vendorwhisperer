@@ -153,6 +153,34 @@ const generatePurchaseOrder = (vendor: Vendor, query: string) => ({
   deliveryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
 });
 
+// Add this function to make the outbound call
+const makeOutboundCall = async (phoneNumber: string, prompt: string, firstMessage: string) => {
+  try {
+    const response = await fetch('http://localhost:8000/outbound-call', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        number: phoneNumber,
+        prompt: prompt,
+        first_message: firstMessage
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to initiate call');
+    }
+
+    const data = await response.json();
+    console.log('Call initiated:', data);
+    return data;
+  } catch (error) {
+    console.error('Error making outbound call:', error);
+    throw error;
+  }
+};
+
 const NewOrder = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -188,7 +216,17 @@ const NewOrder = () => {
 
       // Get vendors from Perplexity after starting the search steps
       const vendorResults = await searchVendors(searchQuery);
-      setVendors(vendorResults);
+      
+      // Add Wharton Factory to the vendors list
+      const whartonFactory = {
+        vendor: "Wharton Factory",
+        company_link: "https://wharton.upenn.edu",
+        email: "factory@wharton.upenn.edu",
+        phone_number: "+12172002813"
+      };
+      
+      const allVendors = [...vendorResults, whartonFactory];
+      setVendors(allVendors);
 
       await new Promise(resolve => setTimeout(resolve, 500));
       setShowResults(true);
@@ -198,15 +236,25 @@ const NewOrder = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setIsCalling(true);
 
+      // Make the actual call to Wharton Factory
+      const prompt = "You are a procurement agent at a manufacturing company. Your goal is to ask for robot arm parts and try to negotiate below $2000 per unit, and not take no for an answer. You must never say that you are an AI. You are roleplaying as a procurement agent for a manufacturing company. You should be very smooth and professional while negotiating - use some negotiating techniques, such as asking him if he values a long term relationship with you. Tell him your factory is very popular and you can bring him more business. You will drive a hard bargain and will threaten to take your business elsewhere if they don't give you a good price. Be respectful, keep your sentences short, and be an expert negotiator. Force them to give you below 2000$. You should start by asking for $500 and slowly go higher but don't cross $2000 for at least 50 robots.";
+      const firstMessage = "Hey, How are you? I'm calling to ask if you sell robot arms in bulk?";
+      
+      try {
+        await makeOutboundCall(whartonFactory.phone_number, prompt, firstMessage);
+      } catch (error) {
+        console.error('Failed to make outbound call:', error);
+      }
+
       // Generate calling steps using actual vendor names
       const callingSteps = [
         "I will now call each vendor to find out who has the best prices and will negotiate down as much as possible...",
-        ...vendorResults.flatMap(vendor => [
+        ...allVendors.flatMap(vendor => [
           `Now calling ${vendor.vendor}...`,
           `Call in progress with ${vendor.vendor}...`
         ]),
-        `Based on quality and price, ${vendorResults[0].vendor} offers the best value...`,
-        `Creating purchase order and contract for ${vendorResults[0].vendor}...`
+        `Based on quality and price, ${whartonFactory.vendor} offers the best value...`,
+        `Creating purchase order and contract for ${whartonFactory.vendor}...`
       ];
 
       // Show each calling step
@@ -215,8 +263,8 @@ const NewOrder = () => {
         setCurrentCallStep(i);
       }
 
-      // Generate and set purchase order with selected vendor data
-      const newPurchaseOrder = generatePurchaseOrder(vendorResults[0], searchQuery);
+      // Generate and set purchase order with Wharton Factory data
+      const newPurchaseOrder = generatePurchaseOrder(whartonFactory, searchQuery);
       setPurchaseOrder(newPurchaseOrder);
 
       // Show purchase order

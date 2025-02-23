@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tunnel": "ngrok http 8000",
+    "server": "node src/twilio/outbound.js"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
@@ -50,12 +52,13 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.7",
     "embla-carousel-react": "^8.3.0",
-    "fastify": "^5.2.1",
+    "fastify": "^4.24.0",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "ngrok": "^5.0.0-beta.2",
     "pdf-lib": "^1.17.1",
+    "posthog-js": "^1.223.2",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
