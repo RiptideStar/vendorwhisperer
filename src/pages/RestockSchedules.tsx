@@ -221,8 +221,8 @@ const RestockSchedules = () => {
           </TabsContent>
 
           <TabsContent value="calendar">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
+            <div className="flex flex-col lg:flex-row gap-4">
+              <Card className="w-fit">
                 <Calendar
                   mode="single"
                   selected={date}
@@ -248,7 +248,7 @@ const RestockSchedules = () => {
                 />
               </Card>
 
-              <Card className="p-6">
+              <Card className="flex-1 p-6">
                 <div className="space-y-4">
                   <h3 className="font-medium">
                     Schedules for {format(date, 'MMMM d, yyyy')}
