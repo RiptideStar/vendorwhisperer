@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -223,7 +222,7 @@ const RestockSchedules = () => {
 
           <TabsContent value="calendar">
             <div className="grid gap-4 md:grid-cols-2">
-              <Card className="p-6">
+              <Card>
                 <Calendar
                   mode="single"
                   selected={date}
